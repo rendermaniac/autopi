@@ -7,6 +7,8 @@ from paho.mqtt import client as mqtt_client
 
 import pigpio
 
+from keepalive import ConnectedClientsKeepAlive
+
 def clamp(v, minimum, maximum):
     return max(min(v, maximum), minimum)
 
@@ -28,6 +30,8 @@ class Car(object):
 
     def __init__(self, simulate=False):
 
+        self.keepalive = ConnectedClientsKeepAlive()
+        
         self.frequency = 2000
         self.power_left = 0
         self.power_right = 0
@@ -138,6 +142,9 @@ class Car(object):
     def run(self):
 
         while True:
+
+            if not self.keepalive.poll():
+                self.stop()
 
             now = datetime.datetime.now()
             if self.turn_time:
